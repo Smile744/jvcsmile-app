@@ -19,33 +19,13 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Cache Gradle
-        uses: actions/cache@v4
+      - name: Setup Gradle 8.7
+        uses: gradle/actions/setup-gradle@v4
         with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+          gradle-version: "8.7"
 
       - name: Build Debug APK
-        shell: bash
-        run: |
-          set -e
-
-          # Si tu proyecto está en la raíz y tiene gradlew:
-          if [ -f "./gradlew" ]; then
-            chmod +x ./gradlew
-            ./gradlew :app:assembleDebug --no-daemon
-          # Si tu proyecto Android está dentro de ./app/ y tiene gradlew allí:
-          elif [ -f "./app/gradlew" ]; then
-            chmod +x ./app/gradlew
-            ./app/gradlew assembleDebug --no-daemon
-          else
-            echo "No se encontró gradlew. Revisa si tu proyecto Android está en la raíz o en un subdirectorio."
-            exit 1
-          fi
+        run: gradle :app:assembleDebug --no-daemon
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
