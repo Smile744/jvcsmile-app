@@ -85,13 +85,17 @@
                     android:textStyle="bold" />
             </LinearLayout>
 
-            <!-- ZÓCALO CENTRAL: Cuadrícula de Apps instaladas -->
+            <!-- ZÓCALO CENTRAL: Cuadrícula con márgenes y espaciado correcto -->
             <androidx.gridlayout.widget.GridLayout
                 android:id="@+id/iconGrid"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                app:columnCount="4">
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                app:columnCount="4"
+                app:alignmentMode="alignBounds"
+                app:columnOrderPreserved="false">
 
                 <!-- Los elementos de las aplicaciones se inyectan dinámicamente aquí -->
             </androidx.gridlayout.widget.GridLayout>
@@ -194,83 +198,8 @@
                         android:hint="Alto"
                         android:inputType="number"
                         android:textColorHint="#88FFFFFF" />
-
-                    <EditText
-                        android:id="@+id/inputDpi"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:hint="DPI"
-                        android:inputType="number"
-                        android:textColorHint="#88FFFFFF" />
                 </LinearLayout>
-
-                <!-- ZÓCALO III: Hechizos del Sistema (Switches) -->
-                <Switch
-                    android:id="@+id/switchDns"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:text="DNS Privado Sin Anuncios"
-                    android:textColor="#FFFFFF" />
-
-                <Switch
-                    android:id="@+id/switchDisableAnimations"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="Remover Animaciones del Sistema"
-                    android:textColor="#FFFFFF" />
-
-                <!-- Configuración Extra: Despertar App Anti-Reposo -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:text="Paquete Forzar Despierto (Anti-Lag)"
-                    android:textColor="#FFFFFF"
-                    android:textStyle="bold" />
-
-                <EditText
-                    android:id="@+id/inputWakePackage"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="com.dts.freefireth"
-                    android:textColorHint="#88FFFFFF" />
-
-                <EditText
-                    android:id="@+id/inputWakeActivity"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="Activity (Opcional)"
-                    android:textColorHint="#88FFFFFF" />
-
-                <!-- GATILLO DE ACCIÓN: Botón Principal ENTER -->
-                <Button
-                    android:id="@+id/btnEnter"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp"
-                    android:text="APLICAR AJUSTES AVANZADOS"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-
-                <ProgressBar
-                    android:id="@+id/progressBar"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginTop="16dp"
-                    android:visibility="gone" />
             </LinearLayout>
-
-            <!-- Espaciador inferior para el relieve del Dock Metálico -->
-            <View
-                android:id="@+id/dock"
-                android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:layout_marginTop="32dp" />
-
         </LinearLayout>
     </ScrollView>
 </RelativeLayout>
