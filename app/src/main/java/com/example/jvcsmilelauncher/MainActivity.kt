@@ -297,7 +297,7 @@ class MainActivity : AppCompatActivity() {
             addUpdateListener { anim ->
                 val c = anim.animatedValue as Int
                 ivJoker.setColorFilter(c)
-                overlayGradient.alpha = if (mode == Mode.PRO) 200 else 120
+                overlayGradient.alpha = if (mode == Mode.PRO) 200f else 120f
             }
             start()
         }
