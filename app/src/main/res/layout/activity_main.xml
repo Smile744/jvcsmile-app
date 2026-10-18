@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://android.com"
-    xmlns:app="http://android.com"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/rootLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -66,7 +66,63 @@
 
                 <!-- Los elementos de las aplicaciones se inyectan dinámicamente aquí -->
             </androidx.gridlayout.widget.GridLayout>
-                          <!-- ZÓCALO II: Escala de Resolución y DPI -->
+
+            <!-- PANEL DE CONTROLES: fila de Shizuku se inserta dinámicamente en el índice 0 -->
+            <LinearLayout
+                android:id="@+id/controlsPanel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="vertical">
+
+                <!-- ZÓCALO I: Frecuencia de Actualización -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Frecuencia de Actualización (Hz)"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/btn60hz"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="4dp"
+                        android:layout_weight="1"
+                        android:text="60 Hz" />
+
+                    <Button
+                        android:id="@+id/btn90hz"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="4dp"
+                        android:layout_weight="1"
+                        android:text="90 Hz" />
+
+                    <Button
+                        android:id="@+id/btn120hz"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="4dp"
+                        android:layout_weight="1"
+                        android:text="120 Hz" />
+
+                    <Button
+                        android:id="@+id/btn144hz"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="144 Hz" />
+                </LinearLayout>
+
+                <!-- ZÓCALO II: Escala de Resolución y DPI -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
