@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#FF1744</color>
+    <color name="dock_dark">#1A1A24</color>
+    <color name="dock_highlight">#2D2D3D</color>
+    <color name="overlay_tint">#99000000</color>
+    <color name="hz_button_normal">#252530</color>
+    <color name="hz_button_active">#00E5FF</color>
+    <color name="joker_blue">#00E5FF</color>
+    <color name="joker_blue_deep">#005577</color>
+    <color name="joker_red">#FF1744</color>
+    <color name="joker_red_deep">#7A0010</color>
+</resources>
