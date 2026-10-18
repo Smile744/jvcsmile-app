@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://android.com"
+    xmlns:app="http://android.com"
+    android:id="@+id/rootLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0D0D11">
+
+    <!-- Fondo de Pantalla o Contenedor del Joker Medieval -->
+    <ImageView
+        android:id="@+id/ivJoker"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/ic_joker_blue" />
+
+    <!-- Capa Translúcida de Humo/Tinte Neón Místico -->
+    <View
+        android:id="@+id/overlayGradient"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#99000000" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <!-- HUD SUPERIOR: Widget del Reloj Gótico -->
+            <TextView
+                android:id="@+id/clockText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="24dp"
+                android:text="21:00"
+                android:textColor="#00E5FF"
+                android:textSize="54sp"
+                android:textStyle="bold" />
+
+            <!-- Frases Dinámicas Basadas en tus Modos -->
+            <TextView
+                android:id="@+id/phraseText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="8dp"
+                android:text="Modo Tranquilo — Relájate"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp" />
+
+            <!-- ZÓCALO CENTRAL: Cuadrícula Hexagonal de Iconos de Apps -->
+            <androidx.gridlayout.widget.GridLayout
+                android:id="@+id/iconGrid"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                app:columnCount="4"
+                app:rowCount="2">
+
+                <!-- Los elementos de las aplicaciones se inyectan dinámicamente aquí -->
+            </androidx.gridlayout.widget.GridLayout>
+                          <!-- ZÓCALO II: Escala de Resolución y DPI -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Escala de Batalla (Resolución y DPI)"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal">
+
+                    <EditText
+                        android:id="@+id/inputWidth"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:hint="Ancho"
+                        android:inputType="number"
+                        android:textColorHint="#88FFFFFF" />
+
+                    <EditText
+                        android:id="@+id/inputHeight"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:hint="Alto"
+                        android:inputType="number"
+                        android:textColorHint="#88FFFFFF" />
+
+                    <EditText
+                        android:id="@+id/inputDpi"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:hint="DPI"
+                        android:inputType="number"
+                        android:textColorHint="#88FFFFFF" />
+                </LinearLayout>
+
+                <!-- ZÓCALO III: Hechizos del Sistema (Switches) -->
+                <Switch
+                    android:id="@+id/switchDns"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="DNS Privado Sin Anuncios"
+                    android:textColor="#FFFFFF" />
+
+                <Switch
+                    android:id="@+id/switchDisableAnimations"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Remover Animaciones del Sistema"
+                    android:textColor="#FFFFFF" />
+
+                <!-- Configuración Extra: Despertar App Anti-Reposo -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Paquete Forzar Despierto (Anti-Lag)"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/inputWakePackage"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="com.dts.freefireth"
+                    android:textColorHint="#88FFFFFF" />
+
+                <EditText
+                    android:id="@+id/inputWakeActivity"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Activity (Opcional)"
+                    android:textColorHint="#88FFFFFF" />
+            </LinearLayout>
+
+            <!-- GATILLO DE ACCIÓN: Botón Principal ENTER -->
+            <Button
+                android:id="@+id/btnEnter"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="DESATAR MODO GAMING"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="16dp"
+                android:visibility="gone" />
+
+            <!-- Espaciador inferior para el relieve del Dock Metálico -->
+            <View
+                android:id="@+id/dock"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_marginTop="32dp" />
+
+        </LinearLayout>
+    </ScrollView>
+</RelativeLayout>
