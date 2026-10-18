@@ -3,24 +3,40 @@ package com.example.jvcsmilelauncher
 import android.animation.ArgbEvaluator
 import android.animation.ValueAnimator
 import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
-import android.graphics.Outline
+import android.content.SharedPreferences
+import android.content.pm.ResolveInfo
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
-import android.view.*
-import android.view.ViewOutlineProvider
-import android.widget.*
+import android.view.Gravity
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Button
+import android.widget.EditText
+import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.ProgressBar
+import android.widget.Switch
+import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.gridlayout.widget.GridLayout
 import androidx.lifecycle.lifecycleScope
+import com.example.jvcsmilelauncher.theme.ThemeEngine
 import com.example.jvcsmilelauncher.util.ShizukuExecutor
 import com.example.jvcsmilelauncher.util.ShizukuPermission
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
@@ -33,6 +49,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var iconGrid: GridLayout
     private lateinit var dock: View
     private lateinit var controlsPanel: LinearLayout
+    private lateinit var btnModeNormal: Button
+    private lateinit var btnModeGaming: Button
+    private lateinit var btnTogglePanel: Button
 
     // Controls
     private lateinit var shizukuStatusText: TextView
@@ -53,18 +72,27 @@ class MainActivity : AppCompatActivity() {
 
     private var currentHz = 60
     private var bgAnimator: ValueAnimator? = null
-    private var currentMode: Mode = Mode.CALM
+    private var currentMode: ThemeEngine.Mode = ThemeEngine.Mode.NORMAL
+    private lateinit var prefs: SharedPreferences
+
+    private val clockHandler = Handler(Looper.getMainLooper())
+    private val clockRunnable = object : Runnable {
+        override fun run() {
+            clockText.text = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
+            clockHandler.postDelayed(this, 10_000L)
+        }
+    }
 
     private val openShizukuManagerLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             updateShizukuUi()
         }
 
-    enum class Mode { CALM, PRO }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        prefs = getSharedPreferences("jvcsmile", Context.MODE_PRIVATE)
 
         // find views
         rootLayout = findViewById(R.id.rootLayout)
@@ -75,6 +103,9 @@ class MainActivity : AppCompatActivity() {
         iconGrid = findViewById(R.id.iconGrid)
         dock = findViewById(R.id.dock)
         controlsPanel = findViewById(R.id.controlsPanel)
+        btnModeNormal = findViewById(R.id.btnModeNormal)
+        btnModeGaming = findViewById(R.id.btnModeGaming)
+        btnTogglePanel = findViewById(R.id.btnTogglePanel)
 
         attachShizukuStatusWidgets()
 
@@ -93,23 +124,35 @@ class MainActivity : AppCompatActivity() {
         progressBar = findViewById(R.id.progressBar)
 
         setupVisuals()
-        setupIconHexClip()
         setupControls()
 
-        startJokerAnimationForMode(currentMode)
-        updateShizukuUi()
-    }
+        btnModeNormal.setOnClickListener { switchMode(ThemeEngine.Mode.NORMAL) }
+        btnModeGaming.setOnClickListener { switchMode(ThemeEngine.Mode.GAMING) }
+        btnTogglePanel.setOnClickListener {
+            controlsPanel.visibility =
+                if (controlsPanel.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+        }
 
-    override fun onResume() {
-        super.onResume()
+        highlightMode(
+            if (prefs.getString("mode", "normal") == "gaming") {
+                ThemeEngine.Mode.GAMING
+            } else {
+                ThemeEngine.Mode.NORMAL
+            }
+        )
+        startJokerAnimationForMode(currentMode)
+        loadApps()
+        clockRunnable.run()
         updateShizukuUi()
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        clockHandler.removeCallbacks(clockRunnable)
         bgAnimator?.cancel()
     }
-        private fun attachShizukuStatusWidgets() {
+
+    private fun attachShizukuStatusWidgets() {
         val container = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             layoutParams = LinearLayout.LayoutParams(
@@ -135,7 +178,7 @@ class MainActivity : AppCompatActivity() {
             setOnClickListener { onShizukuActionClicked() }
         }
 
-        val retryBtn = ImageButton(this).apply {
+        val retryBtn = android.widget.ImageButton(this).apply {
             setImageResource(android.R.drawable.ic_popup_sync)
             background = null
             setOnClickListener { updateShizukuUi() }
@@ -163,49 +206,9 @@ class MainActivity : AppCompatActivity() {
         dockDrawable.cornerRadius = 8f
         dock.background = dockDrawable
         overlayGradient.setBackgroundColor(ContextCompat.getColor(this, R.color.overlay_tint))
-        val blueId = resources.getIdentifier("ic_joker_blue", "drawable", packageName)
-        if (blueId != 0) ivJoker.setImageResource(blueId)
     }
 
-    private fun setupIconHexClip() {
-        val childCount = iconGrid.childCount
-        for (i in 0 until childCount) {
-            val v = iconGrid.getChildAt(i)
-            v.clipToOutline = true
-            v.outlineProvider = hexagonOutlineProvider()
-            v.elevation = 6f
-        }
-    }
-
-    private fun hexagonOutlineProvider(): ViewOutlineProvider {
-        return object : ViewOutlineProvider() {
-            override fun getOutline(view: View, outline: Outline) {
-                val w = view.width.toFloat()
-                val h = view.height.toFloat()
-                if (w == 0f || h == 0f) {
-                    outline.setRoundRect(0, 0, view.width, view.height, 6f)
-                    return
-                }
-                val cx = w / 2f
-                val cy = h / 2f
-                val r = Math.min(w, h) * 0.48f
-                val path = android.graphics.Path()
-                for (i in 0 until 6) {
-                    val theta = Math.toRadians((60 * i - 30).toDouble())
-                    val x = (cx + r * Math.cos(theta)).toFloat()
-                    val y = (cy + r * Math.sin(theta)).toFloat()
-                    if (i == 0) path.moveTo(x, y) else path.lineTo(x, y)
-                }
-                path.close()
-                try {
-                    outline.setConvexPath(path)
-                } catch (t: Throwable) {
-                    outline.setRoundRect(0, 0, view.width, view.height, 6f)
-                }
-            }
-        }
-    }
-        private fun setupControls() {
+    private fun setupControls() {
         highlightHzButton(btn60)
         btn60.setOnClickListener { onHzSelected(60, btn60) }
         btn90.setOnClickListener { onHzSelected(90, btn90) }
@@ -222,10 +225,173 @@ class MainActivity : AppCompatActivity() {
                     .show()
                 return@setOnClickListener
             }
-            setMode(Mode.PRO)
             applyAllSettingsViaShizuku()
         }
     }
+
+    // ---------------- DUALIDAD JOKER: modo azul (normal) / rojo (gaming) ----------------
+
+    private fun switchMode(mode: ThemeEngine.Mode) {
+        currentMode = mode
+        prefs.edit()
+            .putString("mode", if (mode == ThemeEngine.Mode.GAMING) "gaming" else "normal")
+            .apply()
+        highlightMode(mode)
+        startJokerAnimationForMode(mode)
+
+        btnModeNormal.isEnabled = false
+        btnModeGaming.isEnabled = false
+        lifecycleScope.launch {
+            val hz = if (mode == ThemeEngine.Mode.GAMING) {
+                if (currentHz >= 90) currentHz else 120
+            } else {
+                60
+            }
+            val dns = switchDns.isChecked
+            val res = withContext(Dispatchers.IO) {
+                ThemeEngine.applyMode(this@MainActivity, mode, hz, dns)
+            }
+            btnModeNormal.isEnabled = true
+            btnModeGaming.isEnabled = true
+            val ok = res.results.count { it.success }
+            val fail = res.results.size - ok
+            val msg = buildString {
+                append(if (res.wallpaperOk) "Fondo Joker aplicado" else "Fondo falló")
+                append(" · $ok ajustes OK")
+                if (fail > 0) append(" · $fail fallos (¿Shizuku activo?)")
+            }
+            Toast.makeText(this@MainActivity, msg, Toast.LENGTH_LONG).show()
+            res.results.forEach { Log.i(TAG, it.toString()) }
+        }
+    }
+
+    private fun highlightMode(mode: ThemeEngine.Mode) {
+        currentMode = mode
+        if (mode == ThemeEngine.Mode.GAMING) {
+            phraseText.text = "Modo Gaming — Que empiece el espectáculo"
+            clockText.setTextColor(0xFFFF1744.toInt())
+            btnModeGaming.alpha = 1f
+            btnModeNormal.alpha = 0.5f
+            val redId = resources.getIdentifier("ic_joker_red", "drawable", packageName)
+            if (redId != 0) ivJoker.setImageResource(redId)
+        } else {
+            phraseText.text = "Modo Normal — Relájate"
+            clockText.setTextColor(0xFF00E5FF.toInt())
+            btnModeNormal.alpha = 1f
+            btnModeGaming.alpha = 0.5f
+            val blueId = resources.getIdentifier("ic_joker_blue", "drawable", packageName)
+            if (blueId != 0) ivJoker.setImageResource(blueId)
+        }
+        applyNeonHalo(mode)
+    }
+
+    private fun applyNeonHalo(mode: ThemeEngine.Mode) {
+        val haloColor = if (mode == ThemeEngine.Mode.GAMING) {
+            ContextCompat.getColor(this, R.color.joker_red)
+        } else {
+            ContextCompat.getColor(this, R.color.joker_blue)
+        }
+        val gd = dock.background as? GradientDrawable ?: GradientDrawable().apply { cornerRadius = 8f }
+        gd.setStroke(6, haloColor and 0x66FFFFFF.toInt())
+        dock.background = gd
+    }
+
+    private fun startJokerAnimationForMode(mode: ThemeEngine.Mode) {
+        bgAnimator?.cancel()
+        val from = if (mode == ThemeEngine.Mode.NORMAL) {
+            ContextCompat.getColor(this, R.color.joker_blue_deep)
+        } else {
+            ContextCompat.getColor(this, R.color.joker_red_deep)
+        }
+        val to = if (mode == ThemeEngine.Mode.NORMAL) {
+            ContextCompat.getColor(this, R.color.joker_blue)
+        } else {
+            ContextCompat.getColor(this, R.color.joker_red)
+        }
+        bgAnimator = ValueAnimator.ofObject(ArgbEvaluator(), from, to).apply {
+            duration = 900
+            repeatMode = ValueAnimator.REVERSE
+            repeatCount = ValueAnimator.INFINITE
+            addUpdateListener { anim ->
+                val c = anim.animatedValue as Int
+                ivJoker.setColorFilter(c)
+                overlayGradient.alpha = if (mode == ThemeEngine.Mode.GAMING) 0.78f else 0.47f
+            }
+            start()
+        }
+    }
+
+    // ---------------- REJILLA DE APPS ----------------
+
+    private fun loadApps() {
+        lifecycleScope.launch {
+            val apps = withContext(Dispatchers.IO) {
+                val pm = packageManager
+                val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
+                pm.queryIntentActivities(intent, 0)
+                    .filter { it.activityInfo.packageName != packageName }
+                    .distinctBy { it.activityInfo.packageName }
+                    .sortedBy { it.loadLabel(pm).toString().lowercase(Locale.getDefault()) }
+            }
+            iconGrid.removeAllViews()
+            apps.forEachIndexed { index, info -> addAppCell(info, index) }
+        }
+    }
+
+    private fun addAppCell(info: ResolveInfo, index: Int) {
+        val density = resources.displayMetrics.density
+        val cell = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER
+            val pad = (10 * density).toInt()
+            setPadding(pad, pad, pad, pad)
+            background = GradientDrawable().apply {
+                cornerRadius = 16f
+                setColor(0x66202030)
+            }
+            elevation = 4f
+            isClickable = true
+            isFocusable = true
+        }
+
+        val icon = ImageView(this).apply {
+            val s = (52 * density).toInt()
+            layoutParams = LinearLayout.LayoutParams(s, s)
+            setImageDrawable(info.loadIcon(packageManager))
+        }
+
+        val label = TextView(this).apply {
+            text = info.loadLabel(packageManager).toString()
+            textSize = 11f
+            setTextColor(0xFFFFFFFF.toInt())
+            maxLines = 1
+            gravity = Gravity.CENTER
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { topMargin = (6 * density).toInt() }
+        }
+
+        cell.addView(icon)
+        cell.addView(label)
+        cell.setOnClickListener {
+            val intent = packageManager.getLaunchIntentForPackage(info.activityInfo.packageName)
+            if (intent != null) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                startActivity(intent)
+            }
+        }
+
+        val lp = GridLayout.LayoutParams(
+            GridLayout.spec(index / 4),
+            GridLayout.spec(index % 4)
+        )
+        lp.width = GridLayout.LayoutParams.WRAP_CONTENT
+        lp.height = GridLayout.LayoutParams.WRAP_CONTENT
+        iconGrid.addView(cell, lp)
+    }
+
+    // ---------------- Ajustes avanzados (Hz manual) ----------------
 
     private fun onHzSelected(hz: Int, btn: Button) {
         currentHz = hz
@@ -242,67 +408,7 @@ class MainActivity : AppCompatActivity() {
         active.setBackgroundColor(activeColor)
     }
 
-    private fun setMode(mode: Mode) {
-        if (mode == currentMode) return
-        currentMode = mode
-        if (mode == Mode.PRO) {
-            phraseText.text = "Modo Pro — ¡A jugar!"
-            animateControlsAccent("#FF1744")
-            applyNeonHalo(ColorMode.RED)
-            val redId = resources.getIdentifier("ic_joker_red", "drawable", packageName)
-            if (redId != 0) ivJoker.setImageResource(redId) else startJokerAnimationForMode(mode)
-        } else {
-            phraseText.text = "Modo Tranquilo — Relájate"
-            animateControlsAccent("#00E5FF")
-            applyNeonHalo(ColorMode.BLUE)
-            val blueId = resources.getIdentifier("ic_joker_blue", "drawable", packageName)
-            if (blueId != 0) ivJoker.setImageResource(blueId) else startJokerAnimationForMode(mode)
-        }
-    }
-
-    private enum class ColorMode { BLUE, RED }
-
-    private fun applyNeonHalo(colorMode: ColorMode) {
-        val haloColor = if (colorMode == ColorMode.BLUE) ContextCompat.getColor(this, R.color.joker_blue) else ContextCompat.getColor(this, R.color.joker_red)
-        val gd = dock.background as? GradientDrawable ?: GradientDrawable().apply { cornerRadius = 8f }
-        gd.setStroke(6, haloColor and 0x66FFFFFF.toInt())
-        dock.background = gd
-    }
-
-    private fun animateControlsAccent(hexColor: String) {
-        try {
-            val color = android.graphics.Color.parseColor(hexColor)
-            val gd = GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT, intArrayOf(color, darken(color)))
-            gd.cornerRadius = 12f
-            controlsPanel.background = gd
-        } catch (_: Throwable) { /* ignore */ }
-    }
-
-    private fun darken(color: Int): Int {
-        val factor = 0.7f
-        val r = (android.graphics.Color.red(color) * factor).toInt()
-        val g = (android.graphics.Color.green(color) * factor).toInt()
-        val b = (android.graphics.Color.blue(color) * factor).toInt()
-        return android.graphics.Color.rgb(r, g, b)
-    }
-
-    private fun startJokerAnimationForMode(mode: Mode) {
-        bgAnimator?.cancel()
-        val from = if (mode == Mode.CALM) ContextCompat.getColor(this, R.color.joker_blue_deep) else ContextCompat.getColor(this, R.color.joker_red_deep)
-        val to = if (mode == Mode.CALM) ContextCompat.getColor(this, R.color.joker_blue) else ContextCompat.getColor(this, R.color.joker_red)
-        bgAnimator = ValueAnimator.ofObject(ArgbEvaluator(), from, to).apply {
-            duration = 900
-            repeatMode = ValueAnimator.REVERSE
-            repeatCount = ValueAnimator.INFINITE
-            addUpdateListener { anim ->
-                val c = anim.animatedValue as Int
-                ivJoker.setColorFilter(c)
-                overlayGradient.alpha = if (mode == Mode.PRO) 200f else 120f
-            }
-            start()
-        }
-    }
-        // ---------------- Shizuku permission UI / flow ----------------
+    // ---------------- Shizuku permission UI / flow ----------------
 
     private fun updateShizukuUi() {
         try {
@@ -337,7 +443,7 @@ class MainActivity : AppCompatActivity() {
     private fun showShizukuInfoDialog() {
         AlertDialog.Builder(this)
             .setTitle("Shizuku listo")
-            .setMessage("Shizuku está activo y concediste permiso. Puedes aplicar ajustes del sistema ahora.")
+            .setMessage("Shizuku está activo y concediste permiso. Los botones AZUL/ROJO cambiarán el tema completo del celular.")
             .setPositiveButton("OK", null)
             .show()
     }
