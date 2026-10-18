@@ -6,7 +6,6 @@ import android.os.IBinder
 import android.util.Log
 import com.example.jvcsmilelauncher.IShellUserService
 import rikka.shizuku.Shizuku
-import rikka.shizuku.ShizukuUserServiceArgs
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
@@ -47,7 +46,7 @@ object ShizukuExecutor {
             latch = l
             val ok = try {
                 Shizuku.bindUserService(
-                    ShizukuUserServiceArgs(serviceComponent).daemon(false).version(1),
+                    Shizuku.UserServiceArgs(serviceComponent).version(1),
                     connection
                 )
                 true
