@@ -30,7 +30,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="20dp">
+            android:padding="16dp">
 
             <!-- HUD SUPERIOR: Widget del Reloj Gótico -->
             <TextView
@@ -38,7 +38,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="16dp"
                 android:text="21:00"
                 android:textColor="#00E5FF"
                 android:textSize="54sp"
@@ -51,29 +51,69 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="8dp"
-                android:text="Modo Tranquilo — Relájate"
+                android:text="Modo Normal — Relájate"
                 android:textColor="#FFFFFF"
                 android:textSize="14sp" />
 
-            <!-- ZÓCALO CENTRAL: Cuadrícula Hexagonal de Iconos de Apps -->
+            <!-- DUALIDAD DEL JOKER: Interruptor de Personalidad -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnModeNormal"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="4dp"
+                    android:layout_weight="1"
+                    android:backgroundTint="#005577"
+                    android:text="AZUL · NORMAL"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btnModeGaming"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:layout_weight="1"
+                    android:backgroundTint="#7A0010"
+                    android:text="ROJO · GAMING"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- ZÓCALO CENTRAL: Cuadrícula de Apps instaladas -->
             <androidx.gridlayout.widget.GridLayout
                 android:id="@+id/iconGrid"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                app:columnCount="4"
-                app:rowCount="2">
+                android:layout_marginTop="24dp"
+                app:columnCount="4">
 
                 <!-- Los elementos de las aplicaciones se inyectan dinámicamente aquí -->
             </androidx.gridlayout.widget.GridLayout>
+
+            <!-- GATILLO: mostrar/ocultar panel avanzado -->
+            <Button
+                android:id="@+id/btnTogglePanel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:backgroundTint="#252530"
+                android:text="AJUSTES DEL REINO"
+                android:textColor="#FFFFFF" />
 
             <!-- PANEL DE CONTROLES: fila de Shizuku se inserta dinámicamente en el índice 0 -->
             <LinearLayout
                 android:id="@+id/controlsPanel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:orientation="vertical">
+                android:layout_marginTop="8dp"
+                android:orientation="vertical"
+                android:visibility="gone">
 
                 <!-- ZÓCALO I: Frecuencia de Actualización -->
                 <TextView
@@ -204,25 +244,25 @@
                     android:layout_height="wrap_content"
                     android:hint="Activity (Opcional)"
                     android:textColorHint="#88FFFFFF" />
+
+                <!-- GATILLO DE ACCIÓN: Botón Principal ENTER -->
+                <Button
+                    android:id="@+id/btnEnter"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:text="APLICAR AJUSTES AVANZADOS"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="16dp"
+                    android:visibility="gone" />
             </LinearLayout>
-
-            <!-- GATILLO DE ACCIÓN: Botón Principal ENTER -->
-            <Button
-                android:id="@+id/btnEnter"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:text="DESATAR MODO GAMING"
-                android:textSize="16sp"
-                android:textStyle="bold" />
-
-            <ProgressBar
-                android:id="@+id/progressBar"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="16dp"
-                android:visibility="gone" />
 
             <!-- Espaciador inferior para el relieve del Dock Metálico -->
             <View
